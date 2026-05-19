@@ -1,0 +1,10 @@
+{
+  "name": "written-entity",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "install": "cd written-entity-backend && npm install",
+    "build": "cd written-entity-backend && npx prisma generate && npm run build",
+    "start": "cd written-entity-backend && npm start"
+  }
+}
