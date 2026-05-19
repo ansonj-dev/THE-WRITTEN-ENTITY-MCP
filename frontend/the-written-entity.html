@@ -719,6 +719,10 @@
     <input class="auth-input" id="auth-password" type="password" autocomplete="current-password" placeholder="Password">
     <button class="btn btn-primary" id="auth-submit" style="width:100%;justify-content:center;margin-top:4px;" onclick="submitEmailAuth()">Log In</button>
     <button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:8px;" onclick="signInWithGoogle()">Continue with Google</button>
+    <div style="margin:12px 0;text-align:center;font-size:11px;color:var(--text3);">OR</div>
+    <button class="btn btn-ghost" style="width:100%;justify-content:center;background:var(--amber-dim);color:var(--amber);border-color:rgba(245,158,11,0.3);" onclick="signInDemo()">
+      🎭 Try Demo Mode (No Sign-In Required)
+    </button>
     <div class="auth-message" id="auth-message"></div>
   </div>
 </div>
@@ -1168,6 +1172,21 @@ async function handleFileSelected(event) {
     event.target.value = '';
     return;
   }
+  
+  // Check quota before uploading
+  try {
+    const quotaRes = await fetch(`${API_URL}/upload/quota`, { headers: authHeaders() });
+    const quota = await quotaRes.json();
+    if (quota.remaining <= 0) {
+      alert(`⚠️ Rate Limit Reached\n\nYou've used all ${quota.limit} meeting uploads for this account.\n\nThis limit protects API costs during judging. To test more, create a new demo account.`);
+      event.target.value = '';
+      return;
+    }
+    addLog(nowTime(), `Quota: ${quota.remaining}/${quota.limit} uploads remaining`, 'var(--amber)');
+  } catch (err) {
+    console.warn('Could not check quota:', err);
+  }
+  
   const feedback = document.getElementById('upload-feedback');
   feedback.style.display = 'block';
   feedback.querySelector('div:first-child').textContent = 'File received - uploading';
@@ -1184,16 +1203,22 @@ async function handleFileSelected(event) {
   try {
     const res = await fetch(`${API_URL}/upload`, { method: 'POST', body: formData, headers: authHeaders() });
     const result = await res.json();
-    if (!res.ok) throw new Error(result.error || 'Upload failed');
+    if (!res.ok) {
+      if (res.status === 429) {
+        throw new Error(`Rate limit: ${result.error}\n\nYou've used ${result.current}/${result.limit} uploads. Create a new demo account to test more.`);
+      }
+      throw new Error(result.error || 'Upload failed');
+    }
     activeMeetingId = result.meetingId;
     feedback.querySelector('div:first-child').textContent = 'Upload complete - pipeline starting';
-    feedback.querySelector('div:last-child').textContent = `Meeting ID: ${result.meetingId}`;
+    feedback.querySelector('div:last-child').textContent = `Meeting ID: ${result.meetingId} (${result.remaining} uploads remaining)`;
     document.querySelectorAll('.panel-tab')[1].click();
     await loadMeetings();
   } catch (err) {
     feedback.querySelector('div:first-child').textContent = 'Upload failed';
     feedback.querySelector('div:last-child').textContent = err.message;
     addLog(nowTime(), `Upload: ${err.message}`, 'var(--red)');
+    alert(err.message);
   } finally {
     event.target.value = '';
   }
@@ -1209,6 +1234,33 @@ async function signInWithGoogle() {
     },
   });
   if (error) addLog(nowTime(), `Auth: ${error.message}`, 'var(--red)');
+}
+
+async function signInDemo() {
+  try {
+    setAuthMessage('Signing in as demo user...');
+    const res = await fetch(`${AUTH_URL}/demo`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Demo sign-in failed');
+    
+    // Create a mock session for demo mode
+    currentSession = {
+      user: data.user,
+      isDemo: true,
+    };
+    
+    hideAuthGate();
+    updateAuthUI();
+    setConnectionStatus('Demo Mode');
+    addLog(nowTime(), 'Signed in as Demo User (limited features)', 'var(--amber)');
+    await loadMeetings();
+  } catch (err) {
+    setAuthMessage(`Demo sign-in failed: ${err.message}`);
+    addLog(nowTime(), `Demo Auth: ${err.message}`, 'var(--red)');
+  }
 }
 
 async function initSupabaseAuth() {
