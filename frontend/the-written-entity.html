@@ -1004,44 +1004,160 @@ function renderBackendOutputs(data) {
   const analysis = data.analysis || {};
   const tasks = data.tasks || [];
   const emails = data.emails || [];
+  const isDriveLink = data.summaryDocUrl && data.summaryDocUrl.includes('drive.google.com');
+  
   outputs.innerHTML = `
-    <div class="output-block">
-      <div class="output-label">Executive Summary</div>
-      <div class="summary-text">${escapeHtml(data.summary || analysis.summary || 'Summary pending.')}</div>
-      ${renderDecisionList(analysis.keyDecisions)}
-      ${renderRiskList(analysis.risks)}
+    <div style="display:flex;gap:8px;margin-bottom:16px;">
+      <button class="btn btn-primary" style="flex:1;justify-content:center;font-size:11px;" onclick="openUploadTab()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New Analysis
+      </button>
+      <button class="btn btn-ghost" style="flex:1;justify-content:center;font-size:11px;" onclick="clearOutputs()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        Clear
+      </button>
     </div>
+
     <div class="output-block">
-      <div class="output-label">Action Items (${tasks.length})</div>
-      ${tasks.map(task => `
-        <div class="action-item">
-          <div class="action-check">✓</div>
-          <div style="flex:1;">
-            <div class="action-text">${escapeHtml(task.title)}</div>
-            <div class="action-owner">${escapeHtml(task.ownerName || task.ownerEmail || 'Unassigned')} · ${escapeHtml(task.priority || 'medium')}</div>
+      <div class="output-block-header">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <span class="output-block-title">EXECUTIVE SUMMARY</span>
+      </div>
+      <div class="output-block-body" style="font-family:var(--body);line-height:1.8;color:var(--text);">
+        ${escapeHtml(data.summary || analysis.summary || 'Summary pending.').split('\n').map(p => p.trim() ? `<p style="margin-bottom:12px;">${p}</p>` : '').join('')}
+      </div>
+    </div>
+
+    ${renderDecisionList(analysis.keyDecisions)}
+    ${renderRiskList(analysis.risks)}
+
+    <div class="output-block">
+      <div class="output-block-header">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        <span class="output-block-title">ACTION ITEMS (${tasks.length})</span>
+      </div>
+      <div class="output-block-body" style="padding:0;">
+        ${tasks.length ? tasks.map(task => `
+          <div class="action-item" style="padding:12px;border-bottom:1px solid var(--border);">
+            <div class="action-check">✓</div>
+            <div style="flex:1;">
+              <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px;">${escapeHtml(task.title)}</div>
+              ${task.description ? `<div style="font-size:11px;color:var(--text2);margin-bottom:6px;line-height:1.5;">${escapeHtml(task.description)}</div>` : ''}
+              <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                <span class="action-owner">${escapeHtml(task.ownerName || task.ownerEmail || 'Unassigned')}</span>
+                <span class="action-owner" style="background:${task.priority === 'high' ? 'var(--red-dim)' : task.priority === 'low' ? 'var(--blue-dim)' : 'var(--amber-dim)'};color:${task.priority === 'high' ? 'var(--red)' : task.priority === 'low' ? 'var(--blue)' : 'var(--amber)'};">${escapeHtml(task.priority || 'medium')}</span>
+                ${task.deadline ? `<span class="action-owner">${new Date(task.deadline).toLocaleDateString()}</span>` : ''}
+                ${task.notionUrl ? `<a href="${escapeHtml(task.notionUrl)}" target="_blank" style="font-size:10px;color:var(--blue);text-decoration:none;">View in Notion →</a>` : ''}
+              </div>
+            </div>
           </div>
-        </div>`).join('') || '<div class="summary-text">No task records created yet.</div>'}
+        `).join('') : '<div style="padding:12px;color:var(--text2);font-size:11px;">No task records created yet.</div>'}
+      </div>
     </div>
+
     <div class="output-block">
-      <div class="output-label">Follow-up Emails (${emails.length})</div>
-      ${emails.map(email => `
-        <div style="padding:10px;background:var(--surface2);border-radius:6px;margin-bottom:8px;">
-          <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">To: ${escapeHtml(email.toEmail)} · ${escapeHtml(email.status)}</div>
-          <div style="font-size:11.5px;color:var(--text);">${escapeHtml(email.subject)}</div>
-        </div>`).join('') || '<div class="summary-text">No email records created yet.</div>'}
+      <div class="output-block-header">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        <span class="output-block-title">FOLLOW-UP EMAILS (${emails.length})</span>
+      </div>
+      <div class="output-block-body" style="padding:0;">
+        ${emails.length ? emails.map(email => `
+          <div style="padding:12px;border-bottom:1px solid var(--border);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+              <div style="font-size:11px;color:var(--text3);">To: ${escapeHtml(email.toEmail)}</div>
+              <span class="action-owner" style="background:${email.status === 'SENT' ? 'var(--green-dim)' : email.status === 'FAILED' ? 'var(--red-dim)' : 'var(--blue-dim)'};color:${email.status === 'SENT' ? 'var(--green)' : email.status === 'FAILED' ? 'var(--red)' : 'var(--blue)'};">${escapeHtml(email.status)}</span>
+            </div>
+            <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:6px;">${escapeHtml(email.subject)}</div>
+            ${email.bodyText ? `<div style="font-size:11px;color:var(--text2);line-height:1.6;max-height:80px;overflow:hidden;position:relative;">${escapeHtml(email.bodyText.substring(0, 200))}${email.bodyText.length > 200 ? '...' : ''}</div>` : ''}
+          </div>
+        `).join('') : '<div style="padding:12px;color:var(--text2);font-size:11px;">No email records created yet.</div>'}
+      </div>
     </div>
-    ${data.summaryDocUrl ? `<div class="output-block"><div class="output-label">Archive</div><div class="summary-text">${escapeHtml(data.summaryDocUrl)}</div></div>` : ''}
+
+    ${data.summaryDocUrl ? `
+      <div class="output-block">
+        <div class="output-block-header">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span class="output-block-title">MEETING ARCHIVE</span>
+        </div>
+        <div class="output-block-body">
+          ${isDriveLink ? `
+            <div style="display:flex;gap:8px;margin-bottom:12px;">
+              <a href="${escapeHtml(data.summaryDocUrl)}" target="_blank" class="btn btn-primary" style="flex:1;justify-content:center;text-decoration:none;font-size:11px;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                View in Drive
+              </a>
+              <a href="${escapeHtml(data.summaryDocUrl.replace('/view', '/export?format=pdf'))}" target="_blank" class="btn btn-ghost" style="flex:1;justify-content:center;text-decoration:none;font-size:11px;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Download
+              </a>
+            </div>
+            <div style="font-size:10px;color:var(--text3);font-family:var(--mono);word-break:break-all;">${escapeHtml(data.summaryDocUrl)}</div>
+          ` : `
+            <div style="font-size:11px;color:var(--text2);margin-bottom:8px;">Local archive file:</div>
+            <div style="font-size:10px;color:var(--text3);font-family:var(--mono);word-break:break-all;background:var(--surface2);padding:8px;border-radius:4px;">${escapeHtml(data.summaryDocUrl)}</div>
+          `}
+        </div>
+      </div>
+    ` : ''}
   `;
 }
 
 function renderDecisionList(decisions = []) {
   if (!decisions.length) return '';
-  return `<div style="margin-top:12px;"><div class="output-label">Decisions</div>${decisions.map(item => `<div class="summary-text">• ${escapeHtml(item.description)}</div>`).join('')}</div>`;
+  return `
+    <div class="output-block">
+      <div class="output-block-header">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <span class="output-block-title">KEY DECISIONS (${decisions.length})</span>
+      </div>
+      <div class="output-block-body">
+        ${decisions.map((item, idx) => `
+          <div style="margin-bottom:${idx < decisions.length - 1 ? '16px' : '0'};padding-bottom:${idx < decisions.length - 1 ? '16px' : '0'};border-bottom:${idx < decisions.length - 1 ? '1px solid var(--border)' : 'none'};">
+            <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:6px;line-height:1.5;">${escapeHtml(item.description)}</div>
+            ${item.madeBy ? `<div style="font-size:10px;color:var(--text3);">Decided by: ${escapeHtml(item.madeBy)}</div>` : ''}
+            ${item.context ? `<div style="font-size:11px;color:var(--text2);margin-top:4px;line-height:1.5;">${escapeHtml(item.context)}</div>` : ''}
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
 }
 
 function renderRiskList(risks = []) {
   if (!risks.length) return '';
-  return `<div style="margin-top:12px;"><div class="output-label">Risks</div>${risks.map(item => `<div class="summary-text">• ${escapeHtml(item)}</div>`).join('')}</div>`;
+  return `
+    <div class="output-block">
+      <div class="output-block-header">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <span class="output-block-title">RISKS & BLOCKERS (${risks.length})</span>
+      </div>
+      <div class="output-block-body">
+        ${risks.map((item, idx) => `
+          <div style="display:flex;gap:8px;align-items:start;margin-bottom:${idx < risks.length - 1 ? '12px' : '0'};">
+            <div style="width:6px;height:6px;border-radius:50%;background:var(--amber);margin-top:6px;flex-shrink:0;"></div>
+            <div style="font-size:11.5px;color:var(--text2);line-height:1.6;flex:1;">${escapeHtml(item)}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function clearOutputs() {
+  if (!confirm('Clear all outputs and reset the pipeline?')) return;
+  activeMeetingId = null;
+  steps = freshSteps();
+  setProgress(0);
+  renderSteps();
+  document.getElementById('tab-outputs').innerHTML = '<div class="empty-state">No outputs yet. Upload a meeting file and the backend will render summary, tasks, emails, and archive links here.</div>';
+  document.getElementById('pipeline-title').textContent = 'No meeting selected';
+  document.getElementById('pipeline-dot').style.background = 'var(--text3)';
+  document.getElementById('pipeline-status').textContent = 'Idle';
+  document.getElementById('pipeline-status').className = 'meeting-tag';
+  document.getElementById('pipeline-date').textContent = '--';
+  document.getElementById('pipeline-time').textContent = '--';
+  addLog(nowTime(), 'Outputs cleared', 'var(--blue)');
 }
 
 async function handleFileSelected(event) {
