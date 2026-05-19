@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "install": "cd written-entity-backend && npm install",
-    "build": "cd written-entity-backend && npx prisma generate && npm run build",
+    "build": "cd written-entity-backend && npx prisma generate && npx prisma db push --accept-data-loss && npm run build",
     "start": "cd written-entity-backend && npm start"
   }
 }
