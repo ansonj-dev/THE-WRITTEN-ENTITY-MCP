@@ -7,16 +7,18 @@ WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
-COPY .npmrc ./
 
-# Install dependencies with retry logic
-RUN npm ci --prefer-offline --no-audit --legacy-peer-deps || npm install --prefer-offline --no-audit
+# Copy Prisma schema first (needed for postinstall)
+COPY prisma ./prisma/
 
-# Copy application code
+# Install dependencies
+RUN npm install --prefer-offline --no-audit
+
+# Copy rest of application code
 COPY . .
 
-# Generate Prisma client and build
-RUN npx prisma generate && npm run build
+# Build TypeScript
+RUN npm run build
 
 EXPOSE 10000
 
