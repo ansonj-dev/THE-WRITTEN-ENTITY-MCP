@@ -187,6 +187,82 @@
   .up { color: var(--green); }
   .down { color: var(--red); }
 
+  .elastic-viz {
+    display: grid;
+    grid-template-columns: minmax(220px, 0.8fr) 1.2fr;
+    gap: 18px;
+    align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px;
+    overflow: hidden;
+  }
+  .elastic-cube-scene {
+    height: 164px;
+    perspective: 760px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at center, rgba(0,191,179,0.12), transparent 62%);
+  }
+  .elastic-cube {
+    width: 92px;
+    height: 92px;
+    position: relative;
+    transform-style: preserve-3d;
+    animation: elasticCube 8s linear infinite;
+  }
+  .elastic-face {
+    position: absolute;
+    inset: 0;
+    border: 1px solid rgba(0,191,179,0.42);
+    background: rgba(0,191,179,0.08);
+    box-shadow: inset 0 0 24px rgba(0,191,179,0.1);
+  }
+  .elastic-face:nth-child(1) { transform: translateZ(46px); }
+  .elastic-face:nth-child(2) { transform: rotateY(90deg) translateZ(46px); }
+  .elastic-face:nth-child(3) { transform: rotateY(180deg) translateZ(46px); }
+  .elastic-face:nth-child(4) { transform: rotateY(-90deg) translateZ(46px); }
+  .elastic-face:nth-child(5) { transform: rotateX(90deg) translateZ(46px); }
+  .elastic-face:nth-child(6) { transform: rotateX(-90deg) translateZ(46px); }
+  @keyframes elasticCube {
+    from { transform: rotateX(-18deg) rotateY(0deg); }
+    to { transform: rotateX(-18deg) rotateY(360deg); }
+  }
+  .elastic-viz-title {
+    font-family: var(--display);
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .elastic-viz-copy {
+    color: var(--text2);
+    font-size: 12px;
+    line-height: 1.7;
+    max-width: 680px;
+  }
+  .elastic-viz-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .elastic-viz-tags span {
+    font: 10px var(--mono);
+    color: #00BFB3;
+    border: 1px solid rgba(0,191,179,0.26);
+    background: rgba(0,191,179,0.08);
+    border-radius: 4px;
+    padding: 4px 7px;
+  }
+  @media (max-width: 980px) {
+    .elastic-viz { grid-template-columns: 1fr; }
+    .elastic-cube-scene { height: 132px; }
+  }
+
   /* PIPELINE PANEL */
   .pipeline-card {
     background: var(--surface); border: 1px solid var(--border);
@@ -545,6 +621,11 @@
           Gemini API
           <div class="int-dot connected"></div>
         </div>
+        <div class="integration-item">
+          <div class="int-icon" style="background:#00BFB3;color:#05050A">E</div>
+          Elastic MCP
+          <div class="int-dot connected" id="elastic-status-dot"></div>
+        </div>
       </div>
     </div>
 
@@ -589,6 +670,29 @@
           <div class="metric-value" id="m4">0</div>
           <div class="metric-sub" id="m4-sub">drafted or sent by backend</div>
           <div class="metric-change up" id="m4-change">Live</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="elastic-viz">
+      <div class="elastic-cube-scene" aria-hidden="true">
+        <div class="elastic-cube">
+          <div class="elastic-face"></div>
+          <div class="elastic-face"></div>
+          <div class="elastic-face"></div>
+          <div class="elastic-face"></div>
+          <div class="elastic-face"></div>
+          <div class="elastic-face"></div>
+        </div>
+      </div>
+      <div>
+        <div class="elastic-viz-title">Elastic Context Layer</div>
+        <div class="elastic-viz-copy">Every completed meeting becomes searchable agent memory: transcript, summary, decisions, tasks, risks, follow-ups, and archive links. Google Cloud Agent Builder can connect through Elastic MCP while this app exposes the same memory search in the backend.</div>
+        <div class="elastic-viz-tags">
+          <span>Elasticsearch</span>
+          <span>MCP-ready tools</span>
+          <span>Meeting memory</span>
+          <span>Gemini agent workflow</span>
         </div>
       </div>
     </div>
@@ -746,8 +850,9 @@ const stepTemplates = [
   { agentName: 'taskAgent', icon: '📋', name: 'Task Agent', desc: 'Notion task creation' },
   { agentName: 'commsAgent', icon: '📧', name: 'Comms Agent', desc: 'Gmail follow-up drafting/sending' },
   { agentName: 'archiver', icon: '💾', name: 'Archive Agent', desc: 'Google Drive or local archive' },
+  { agentName: 'elasticMemory', icon: '🔎', name: 'Elastic Memory Agent', desc: 'MCP-ready search context and meeting memory indexing' },
 ];
-const progressByAgent = { orchestrator: 10, transcriber: 25, analyzer: 45, taskAgent: 65, commsAgent: 85, archiver: 100 };
+const progressByAgent = { orchestrator: 10, transcriber: 25, analyzer: 45, taskAgent: 65, commsAgent: 80, archiver: 90, elasticMemory: 100 };
 
 let ws;
 let activeMeetingId = null;
@@ -1030,6 +1135,7 @@ function renderBackendOutputs(data) {
 
     ${renderDecisionList(analysis.keyDecisions)}
     ${renderRiskList(analysis.risks)}
+    ${renderElasticMemory(data.elasticMemory)}
 
     <div class="output-block">
       <div class="output-block-header">
@@ -1100,6 +1206,36 @@ function renderBackendOutputs(data) {
         </div>
       </div>
     ` : ''}
+  `;
+}
+
+function renderElasticMemory(elasticMemory) {
+  if (!elasticMemory) return '';
+  const related = elasticMemory.relatedMemories || [];
+  return `
+    <div class="output-block">
+      <div class="output-block-header">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <span class="output-block-title">ELASTIC MCP MEMORY</span>
+      </div>
+      <div class="output-block-body">
+        <div style="font-size:12px;color:${elasticMemory.enabled ? 'var(--green)' : 'var(--amber)'};font-weight:600;margin-bottom:8px;">
+          ${elasticMemory.enabled ? 'Indexed into Elastic context layer' : 'Elastic memory not configured'}
+        </div>
+        <div style="font-size:11px;color:var(--text2);line-height:1.6;margin-bottom:12px;">${escapeHtml(elasticMemory.message || '')}</div>
+        ${elasticMemory.index ? `<div style="font-size:10px;color:var(--text3);font-family:var(--mono);margin-bottom:12px;">Index: ${escapeHtml(elasticMemory.index)}</div>` : ''}
+        ${elasticMemory.mcpServerUrl ? `<div style="font-size:10px;color:var(--text3);font-family:var(--mono);word-break:break-all;margin-bottom:12px;">MCP: ${escapeHtml(elasticMemory.mcpServerUrl)}</div>` : ''}
+        ${related.length ? `
+          <div style="font-size:10px;color:var(--text3);font-family:var(--mono);margin-bottom:8px;letter-spacing:0.06em;">RELATED MEMORIES</div>
+          ${related.map(hit => `
+            <div style="padding:10px;border:1px solid var(--border);border-radius:6px;margin-bottom:8px;background:var(--surface2);">
+              <div style="font-size:12px;color:var(--text);font-weight:600;margin-bottom:4px;">${escapeHtml(hit.title)}</div>
+              <div style="font-size:11px;color:var(--text2);line-height:1.5;">${escapeHtml((hit.summary || '').slice(0, 180))}${(hit.summary || '').length > 180 ? '...' : ''}</div>
+            </div>
+          `).join('')}
+        ` : ''}
+      </div>
+    </div>
   `;
 }
 
@@ -1460,6 +1596,21 @@ function escapeAttr(value) {
   return escapeHtml(value).replace(/`/g, '&#96;');
 }
 
+async function loadElasticStatus() {
+  const dot = document.getElementById('elastic-status-dot');
+  if (!dot) return;
+  try {
+    const res = await fetch(`${API_URL}/pipeline/elastic/status`, { headers: authHeaders() });
+    if (!res.ok) throw new Error('Elastic status unavailable');
+    const status = await res.json();
+    dot.className = `int-dot ${status.enabled ? 'connected' : 'disconnected'}`;
+    dot.title = status.enabled ? `Elastic index: ${status.index}` : 'Configure ELASTICSEARCH_URL and credentials';
+  } catch {
+    dot.className = 'int-dot disconnected';
+    dot.title = 'Elastic status unavailable';
+  }
+}
+
 function updateTime() {
   document.getElementById('live-time').textContent = nowTime();
 }
@@ -1471,6 +1622,7 @@ updateTime();
 setInterval(updateTime, 1000);
 initSupabaseAuth();
 connectWebSocket();
+loadElasticStatus();
 loadMeetings();
 setInterval(loadMeetings, 15000);
 </script>

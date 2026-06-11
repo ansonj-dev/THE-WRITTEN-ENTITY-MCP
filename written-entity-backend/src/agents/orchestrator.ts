@@ -6,6 +6,7 @@ import { withRetry } from '../utils/retry';
 import { runAnalyzer } from './analyzer';
 import { runArchiver } from './archiver';
 import { runCommsAgent } from './commsAgent';
+import { runElasticMemory } from './elasticMemory';
 import { runTaskAgent } from './taskAgent';
 import { runTranscriber } from './transcriber';
 
@@ -14,8 +15,9 @@ const progressMap: Record<string, number> = {
   transcriber: 25,
   analyzer: 45,
   taskAgent: 65,
-  commsAgent: 85,
-  archiver: 100,
+  commsAgent: 80,
+  archiver: 90,
+  elasticMemory: 100,
 };
 
 export async function runPipeline(meetingId: string) {
@@ -28,7 +30,7 @@ export async function runPipeline(meetingId: string) {
   }
 
   const run = await prisma.pipelineRun.create({ data: { meetingId, status: 'RUNNING' } });
-  const stepNames = ['orchestrator', 'transcriber', 'analyzer', 'taskAgent', 'commsAgent', 'archiver'];
+  const stepNames = ['orchestrator', 'transcriber', 'analyzer', 'taskAgent', 'commsAgent', 'archiver', 'elasticMemory'];
   await prisma.pipelineStep.createMany({
     data: stepNames.map((agentName) => ({ pipelineRunId: run.id, agentName, status: agentName === 'orchestrator' ? 'DONE' : 'PENDING' })),
   });
@@ -79,6 +81,15 @@ export async function runPipeline(meetingId: string) {
       onRetry: (attempt, err) => markRetry(run.id, meetingId, 'archiver', attempt, err),
     }), run.id, meetingId);
     broadcastLog('archiver', `Summary archived · ${archive.driveUrl}`);
+
+    await updateStep(run.id, meetingId, 'elasticMemory', 'RUNNING', { startedAt: new Date() });
+    broadcastLog('elasticMemory', 'Searching and indexing Elastic meeting memory...');
+    const elasticMemory = await timedStep('elasticMemory', () => withRetry(() => runElasticMemory(meetingId, transcript, analysis, tasks, emails), {
+      maxAttempts: 2,
+      baseDelayMs: 1000,
+      onRetry: (attempt, err) => markRetry(run.id, meetingId, 'elasticMemory', attempt, err),
+    }), run.id, meetingId);
+    broadcastLog('elasticMemory', elasticMemory.message);
 
     const totalMs = Date.now() - startedAt;
     const completed = await prisma.pipelineRun.update({
@@ -133,6 +144,7 @@ async function updateStep(runId: string, meetingId: string, agentName: string, s
     taskAgent: 'CREATING_TASKS',
     commsAgent: 'SENDING_COMMS',
     archiver: 'ARCHIVING',
+    elasticMemory: 'ARCHIVING',
   }[agentName] as any;
   if (status === 'RUNNING' && meetingStatus) await prisma.meeting.update({ where: { id: meetingId }, data: { status: meetingStatus } });
 

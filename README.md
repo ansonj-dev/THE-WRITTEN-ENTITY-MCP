@@ -16,6 +16,7 @@ The Written Entity automates your entire post-meeting workflow:
 3. **✅ Create Tasks** - Automatically generate tasks in Notion with owners and deadlines
 4. **📧 Send Follow-ups** - Draft and send personalized emails via Gmail
 5. **📁 Archive** - Store comprehensive summaries in Google Drive
+6. **🔎 Remember** - Index meeting summaries, transcripts, decisions, and actions into Elastic for MCP-ready retrieval
 
 **Result:** Reduce 30-60 minutes of post-meeting work to under 2 minutes of automated processing.
 
@@ -23,13 +24,14 @@ The Written Entity automates your entire post-meeting workflow:
 
 ## ✨ Key Features
 
-### 🤖 **6-Agent AI Pipeline**
+### 🤖 **7-Agent AI Pipeline**
 - **Orchestrator** - Coordinates the entire workflow
 - **Transcriber** - Processes audio/text with Gemini API
 - **Analyzer** - Extracts insights and action items
 - **Task Agent** - Creates tasks in Notion
 - **Comms Agent** - Drafts and sends emails
 - **Archiver** - Stores summaries in Drive
+- **Elastic Memory Agent** - Searches prior meeting memories and indexes the current run into Elasticsearch
 
 ### 🔄 **Real-time Updates**
 - Live WebSocket connection
@@ -48,6 +50,41 @@ The Written Entity automates your entire post-meeting workflow:
 - **Notion** - Task management
 - **Supabase** - Authentication & database
 - **Gemini AI** - Transcription & analysis
+- **Elastic Search AI Platform** - Enterprise search, memory, and MCP-ready context tools
+
+---
+
+## 🏆 Google Cloud Rapid Agent Hackathon: Elastic Track
+
+This project is shaped for the Elastic partner bucket in the Google Cloud Rapid Agent Hackathon. The Devpost challenge asks for a functional agent that moves beyond chat, uses Gemini/Google Cloud Agent Builder, and integrates a partner MCP server. The Elastic track specifically emphasizes contextual retrieval, Elasticsearch as a memory layer, ES|QL-backed tools, and MCP exposure through Elastic Agent Builder.
+
+The Written Entity now demonstrates that pattern:
+
+- Gemini analyzes meeting recordings and extracts decisions, action items, risks, and follow-ups.
+- The backend executes a multi-step agent workflow that creates tasks, drafts communications, archives summaries, and persists outputs.
+- The Elastic Memory Agent indexes every completed meeting as a searchable enterprise-memory document.
+- `/api/pipeline/elastic/search?q=...` exposes a lightweight search tool for demos, extensions, or Agent Builder tool calls.
+- `ELASTIC_MCP_SERVER_URL` documents the Elastic Agent Builder MCP endpoint you connect to Google Cloud Agent Builder.
+
+### Elastic Setup
+
+Create an Elastic Cloud Serverless Elasticsearch project, enable Agent Builder in Kibana, then add these backend environment variables:
+
+```env
+ELASTICSEARCH_URL=https://your-project.es.region.gcp.elastic.cloud
+ELASTICSEARCH_API_KEY=your_elasticsearch_api_key
+ELASTICSEARCH_INDEX=written-entity-meeting-memory
+ELASTIC_MCP_SERVER_URL=https://your-elastic-agent-builder-mcp-endpoint
+```
+
+If you use username/password auth instead of an API key:
+
+```env
+ELASTICSEARCH_USERNAME=elastic
+ELASTICSEARCH_PASSWORD=your_password
+```
+
+For the Devpost demo, show a meeting upload, the seven pipeline steps, the Elastic memory card in the output panel, and a query against `/api/pipeline/elastic/search?q=launch risks`. In Google Cloud Agent Builder, connect the Elastic MCP server URL from Kibana so Gemini can call the same Elastic-backed tools as partner MCP capabilities.
 
 ---
 

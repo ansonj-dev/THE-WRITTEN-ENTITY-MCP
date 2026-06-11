@@ -4,12 +4,12 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
 model User {
-  id                    String    @id @default(cuid())
+  id                    String    @id @default(cuid()) @map("_id")
   email                 String    @unique
   name                  String?
   googleAccessToken     String?
@@ -24,7 +24,7 @@ model User {
 }
 
 model Meeting {
-  id                String        @id @default(cuid())
+  id                String        @id @default(cuid()) @map("_id")
   userId            String
   user              User          @relation(fields: [userId], references: [id])
   googleEventId     String?       @unique
@@ -61,7 +61,7 @@ enum MeetingStatus {
 }
 
 model PipelineRun {
-  id          String         @id @default(cuid())
+  id          String         @id @default(cuid()) @map("_id")
   meetingId   String         @unique
   meeting     Meeting        @relation(fields: [meetingId], references: [id])
   startedAt   DateTime       @default(now())
@@ -80,7 +80,7 @@ enum PipelineStatus {
 }
 
 model PipelineStep {
-  id            String      @id @default(cuid())
+  id            String      @id @default(cuid()) @map("_id")
   pipelineRunId String
   pipelineRun   PipelineRun @relation(fields: [pipelineRunId], references: [id])
   agentName     String
@@ -103,7 +103,7 @@ enum StepStatus {
 }
 
 model Task {
-  id            String   @id @default(cuid())
+  id            String   @id @default(cuid()) @map("_id")
   meetingId     String
   meeting       Meeting  @relation(fields: [meetingId], references: [id])
   title         String
@@ -118,7 +118,7 @@ model Task {
 }
 
 model Email {
-  id             String      @id @default(cuid())
+  id             String      @id @default(cuid()) @map("_id")
   meetingId      String
   meeting        Meeting     @relation(fields: [meetingId], references: [id])
   toEmail        String
@@ -139,7 +139,7 @@ enum EmailStatus {
 }
 
 model CalendarWebhookChannel {
-  id          String   @id @default(cuid())
+  id          String   @id @default(cuid()) @map("_id")
   userId      String
   user        User     @relation(fields: [userId], references: [id])
   channelId   String   @unique
