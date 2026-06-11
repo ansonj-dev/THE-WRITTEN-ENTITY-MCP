@@ -14,45 +14,60 @@ router.post('/trigger', async (req, res) => {
 });
 
 router.get('/status/:meetingId', async (req, res) => {
-  const run = await prisma.pipelineRun.findFirst({
-    where: { meetingId: req.params.meetingId },
-    include: { steps: true },
-    orderBy: { startedAt: 'desc' },
-  });
-  if (!run) return res.status(404).json({ error: 'No pipeline run found' });
-  return res.json(run);
+  try {
+    const run = await prisma.pipelineRun.findFirst({
+      where: { meetingId: req.params.meetingId },
+      include: { steps: true },
+      orderBy: { startedAt: 'desc' },
+    });
+    if (!run) return res.status(404).json({ error: 'No pipeline run found' });
+    return res.json(run);
+  } catch (err: any) {
+    console.warn('Database unavailable for pipeline status:', err.message);
+    return res.status(404).json({ error: 'Pipeline run not found or database unavailable' });
+  }
 });
 
 router.get('/meetings', async (req, res) => {
-  const user = await userFromRequest(req as any).catch(() => null);
-  const meetings = await prisma.meeting.findMany({
-    where: user ? { userId: user.id } : undefined,
-    include: {
-      pipelineRun: { include: { steps: true } },
-      tasks: true,
-      emails: true,
-    },
-    orderBy: { startTime: 'desc' },
-    take: 20,
-  });
-  return res.json(meetings);
+  try {
+    const user = await userFromRequest(req as any).catch(() => null);
+    const meetings = await prisma.meeting.findMany({
+      where: user ? { userId: user.id } : undefined,
+      include: {
+        pipelineRun: { include: { steps: true } },
+        tasks: true,
+        emails: true,
+      },
+      orderBy: { startTime: 'desc' },
+      take: 20,
+    });
+    return res.json(meetings);
+  } catch (err: any) {
+    console.warn('Database unavailable, returning empty meetings list:', err.message);
+    return res.json([]);
+  }
 });
 
 router.get('/outputs/:meetingId', async (req, res) => {
-  const meeting = await prisma.meeting.findUnique({
-    where: { id: req.params.meetingId },
-    include: { tasks: true, emails: true, pipelineRun: { include: { steps: true } } },
-  });
-  if (!meeting) return res.status(404).json({ error: 'Meeting not found' });
-  const elasticStep = meeting.pipelineRun?.steps.find((step) => step.agentName === 'elasticMemory');
-  return res.json({
-    summary: meeting.summaryText,
-    analysis: meeting.analysis,
-    tasks: meeting.tasks,
-    emails: meeting.emails,
-    summaryDocUrl: meeting.summaryDocUrl,
-    elasticMemory: elasticStep?.output ?? null,
-  });
+  try {
+    const meeting = await prisma.meeting.findUnique({
+      where: { id: req.params.meetingId },
+      include: { tasks: true, emails: true, pipelineRun: { include: { steps: true } } },
+    });
+    if (!meeting) return res.status(404).json({ error: 'Meeting not found' });
+    const elasticStep = meeting.pipelineRun?.steps.find((step) => step.agentName === 'elasticMemory');
+    return res.json({
+      summary: meeting.summaryText,
+      analysis: meeting.analysis,
+      tasks: meeting.tasks,
+      emails: meeting.emails,
+      summaryDocUrl: meeting.summaryDocUrl,
+      elasticMemory: elasticStep?.output ?? null,
+    });
+  } catch (err: any) {
+    console.warn('Database unavailable for outputs, returning empty:', err.message);
+    return res.status(404).json({ error: 'Meeting not found or database unavailable' });
+  }
 });
 
 router.get('/elastic/status', (_req, res) => {

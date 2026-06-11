@@ -42,14 +42,21 @@ app.get('/health', (_req, res) => {
 const uploadDir = process.platform === 'win32' ? path.join(process.cwd(), 'uploads') : '/tmp/uploads';
 fs.mkdirSync(uploadDir, { recursive: true });
 
+// Skip database initialization in local mode if DB connection fails
 ensureDefaultUser()
   .then(() => {
-    server.listen(port, () => {
-      console.log(`The Written Entity backend running on http://localhost:${port}`);
-      console.log(`WebSocket available at ws://localhost:${port}/ws`);
-    });
+    console.log('Database connected and default user ensured');
+    startServer();
   })
   .catch((err) => {
-    console.error('Failed to initialize backend:', err);
-    process.exit(1);
+    console.warn('Database connection failed - running in LOCAL MODE without database:', err.message);
+    console.warn('Upload and pipeline features will use in-memory fallback');
+    startServer();
   });
+
+function startServer() {
+  server.listen(port, () => {
+    console.log(`The Written Entity backend running on http://localhost:${port}`);
+    console.log(`WebSocket available at ws://localhost:${port}/ws`);
+  });
+}

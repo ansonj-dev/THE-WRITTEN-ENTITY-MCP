@@ -1,0 +1,48 @@
+Meeting Transcript - Q1 Planning Session
+
+Date: January 15, 2024
+Duration: 45 minutes
+Attendees: John Smith, Sarah Johnson, Mike Chen
+
+[00:00] John Smith: Good morning everyone. Let's start our Q1 planning meeting. Sarah, can you give us an update on the marketing budget?
+
+[00:15] Sarah Johnson: Sure! We've allocated $50,000 for Q1. The breakdown is: $20k for digital ads, $15k for content creation, and $15k for events and sponsorships.
+
+[00:30] Mike Chen: That sounds reasonable. I have a concern about the digital ads budget though. With the recent changes in ad costs, we might need an additional $5k to maintain our reach.
+
+[00:45] John Smith: Good point, Mike. Sarah, can you review the digital ads allocation and come back with a revised proposal by next week?
+
+[01:00] Sarah Johnson: Absolutely. I'll send an updated breakdown by Friday.
+
+[01:15] John Smith: Perfect. Moving on to our product roadmap. Mike, what are the key features we're targeting this quarter?
+
+[01:30] Mike Chen: We have three main priorities: First, implement the new user dashboard. Second, add multi-language support. And third, integrate with the payment gateway.
+
+[01:45] Sarah Johnson: How confident are we about the timeline for the payment gateway? That's critical for the product launch.
+
+[02:00] Mike Chen: We're 80% confident. The main risk is the API approval from the payment provider, which can take 2-4 weeks.
+
+[02:15] John Smith: Let's add that as a risk item. Sarah, can you follow up with the payment provider to expedite the approval?
+
+[02:30] Sarah Johnson: Yes, I'll reach out to their partnership team today.
+
+[02:45] John Smith: Excellent. Any other concerns or action items before we wrap up?
+
+[03:00] Mike Chen: Just one thing - we need to schedule a technical review meeting for the dashboard design. Can we aim for next Wednesday?
+
+[03:15] Sarah Johnson: Wednesday works for me.
+
+[03:20] John Smith: Same here. I'll send out the calendar invite. Thanks everyone, great discussion!
+
+Action Items:
+1. Sarah: Review and update digital ads budget allocation - Due: Friday
+2. Sarah: Contact payment provider for API approval expedite - Due: Today
+3. Mike: Prepare technical specs for dashboard review - Due: Next Wednesday
+4. John: Send calendar invite for technical review meeting - Due: Today
+
+Key Decisions:
+- Q1 marketing budget approved at $50k with potential $5k increase for digital ads
+- Product roadmap priorities: User dashboard, multi-language support, payment integration
+- Payment gateway API approval identified as main risk
+
+Next Meeting: Dashboard Technical Review - Next Wednesday 2pm

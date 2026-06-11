@@ -189,26 +189,28 @@
 
   .elastic-viz {
     display: grid;
-    grid-template-columns: minmax(220px, 0.8fr) 1.2fr;
-    gap: 18px;
+    grid-template-columns: minmax(200px, 0.7fr) 1fr;
+    gap: 24px;
     align-items: center;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 10px;
-    padding: 18px;
-    overflow: hidden;
+    padding: 20px;
+    overflow: visible;
+    min-height: 200px;
   }
   .elastic-cube-scene {
-    height: 164px;
-    perspective: 760px;
+    height: 180px;
+    perspective: 800px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: radial-gradient(circle at center, rgba(0,191,179,0.12), transparent 62%);
+    background: radial-gradient(circle at center, rgba(0,191,179,0.12), transparent 65%);
+    border-radius: 8px;
   }
   .elastic-cube {
-    width: 92px;
-    height: 92px;
+    width: 100px;
+    height: 100px;
     position: relative;
     transform-style: preserve-3d;
     animation: elasticCube 8s linear infinite;
@@ -216,19 +218,19 @@
   .elastic-face {
     position: absolute;
     inset: 0;
-    border: 1px solid rgba(0,191,179,0.42);
-    background: rgba(0,191,179,0.08);
-    box-shadow: inset 0 0 24px rgba(0,191,179,0.1);
+    border: 1px solid rgba(0,191,179,0.5);
+    background: rgba(0,191,179,0.1);
+    box-shadow: inset 0 0 28px rgba(0,191,179,0.15);
   }
-  .elastic-face:nth-child(1) { transform: translateZ(46px); }
-  .elastic-face:nth-child(2) { transform: rotateY(90deg) translateZ(46px); }
-  .elastic-face:nth-child(3) { transform: rotateY(180deg) translateZ(46px); }
-  .elastic-face:nth-child(4) { transform: rotateY(-90deg) translateZ(46px); }
-  .elastic-face:nth-child(5) { transform: rotateX(90deg) translateZ(46px); }
-  .elastic-face:nth-child(6) { transform: rotateX(-90deg) translateZ(46px); }
+  .elastic-face:nth-child(1) { transform: translateZ(50px); }
+  .elastic-face:nth-child(2) { transform: rotateY(90deg) translateZ(50px); }
+  .elastic-face:nth-child(3) { transform: rotateY(180deg) translateZ(50px); }
+  .elastic-face:nth-child(4) { transform: rotateY(-90deg) translateZ(50px); }
+  .elastic-face:nth-child(5) { transform: rotateX(90deg) translateZ(50px); }
+  .elastic-face:nth-child(6) { transform: rotateX(-90deg) translateZ(50px); }
   @keyframes elasticCube {
-    from { transform: rotateX(-18deg) rotateY(0deg); }
-    to { transform: rotateX(-18deg) rotateY(360deg); }
+    from { transform: rotateX(-20deg) rotateY(0deg); }
+    to { transform: rotateX(-20deg) rotateY(360deg); }
   }
   .elastic-viz-title {
     font-family: var(--display);
@@ -471,53 +473,7 @@
     line-height: 1.7;
     color: var(--text2);
   }
-  .auth-overlay {
-    position: fixed; inset: 0; z-index: 50;
-    display: none; align-items: center; justify-content: center;
-    background: rgba(5,5,10,0.88);
-    backdrop-filter: blur(12px);
-    padding: 20px;
-  }
-  .auth-overlay.show { display: flex; }
-  .auth-card {
-    width: min(420px, 100%);
-    background: var(--surface);
-    border: 1px solid var(--border2);
-    border-radius: 10px;
-    padding: 22px;
-    box-shadow: 0 24px 80px rgba(0,0,0,0.45);
-  }
-  .auth-title {
-    font-family: var(--display);
-    font-size: 18px;
-    font-weight: 800;
-    margin-bottom: 6px;
-  }
-  .auth-sub { color: var(--text2); font-size: 12px; line-height: 1.5; margin-bottom: 18px; }
-  .auth-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 14px; }
-  .auth-tab {
-    border: 1px solid var(--border);
-    background: var(--surface2);
-    color: var(--text2);
-    border-radius: 7px;
-    padding: 8px;
-    cursor: pointer;
-    font-size: 12px;
-  }
-  .auth-tab.active { color: var(--text); border-color: rgba(233,69,96,0.45); background: var(--red-dim); }
-  .auth-input {
-    width: 100%;
-    border: 1px solid var(--border2);
-    background: var(--bg);
-    color: var(--text);
-    border-radius: 7px;
-    padding: 10px 11px;
-    margin-bottom: 10px;
-    font: 13px var(--body);
-    outline: none;
-  }
-  .auth-input:focus { border-color: rgba(79,142,247,0.55); }
-  .auth-message { min-height: 18px; margin-top: 10px; font-size: 11px; color: var(--text2); line-height: 1.5; }
+  /* Auth overlay removed - local mode only */
   .user-menu {
     position: fixed;
     top: 48px; right: 18px; z-index: 60;
@@ -551,8 +507,8 @@
       <a href="#" data-view="settings" onclick="setMainView('settings', this)">Settings</a>
     </nav>
     <div class="topbar-right">
-      <div class="status-pill">Checking Session</div>
-      <div class="avatar" onclick="toggleUserMenu()">--</div>
+      <div class="status-pill">Local Mode</div>
+      <div class="avatar" onclick="toggleUserMenu()">LU</div>
     </div>
   </header>
 
@@ -806,26 +762,12 @@
 </div>
 
 <div class="user-menu" id="user-menu">
-  <div class="user-menu-row" id="user-email">Not signed in</div>
-  <button class="btn btn-ghost" style="width:100%;justify-content:center;margin-bottom:6px;" onclick="signInWithGoogle()">Connect Google</button>
-  <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="signOut()">Sign Out</button>
+  <div class="user-menu-row" id="user-email">Local User (No Auth)</div>
+  <div class="user-menu-row" style="font-size:11px;padding-top:4px;color:var(--text3);">Running in local development mode without authentication.</div>
 </div>
 
-<div class="auth-overlay" id="auth-overlay">
-  <div class="auth-card">
-    <div class="auth-title">The Written Entity</div>
-    <div class="auth-sub">Sign in to process meetings, store your pipeline runs, and connect Google/Notion automation.</div>
-    <div class="auth-tabs">
-      <button class="auth-tab active" id="login-tab" onclick="setAuthMode('login')">Log In</button>
-      <button class="auth-tab" id="signup-tab" onclick="setAuthMode('signup')">Sign Up</button>
-    </div>
-    <input class="auth-input" id="auth-email" type="email" autocomplete="email" placeholder="Email">
-    <input class="auth-input" id="auth-password" type="password" autocomplete="current-password" placeholder="Password">
-    <button class="btn btn-primary" id="auth-submit" style="width:100%;justify-content:center;margin-top:4px;" onclick="submitEmailAuth()">Log In</button>
-    <button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:8px;" onclick="signInWithGoogle()">Continue with Google</button>
-    <div class="auth-message" id="auth-message"></div>
-  </div>
-</div>
+<!-- Auth overlay removed - running in local mode without authentication -->
+
 
 <script>
 const APP_CONFIG = window.WRITTEN_ENTITY_CONFIG || {};
@@ -1299,11 +1241,7 @@ function clearOutputs() {
 async function handleFileSelected(event) {
   const file = event.target.files[0];
   if (!file) return;
-  if (!currentSession) {
-    showAuthGate('Please sign in before uploading a meeting.');
-    event.target.value = '';
-    return;
-  }
+  // Auth check removed - local mode enabled
   
   // Check quota before uploading
   try {
@@ -1360,132 +1298,59 @@ async function handleFileSelected(event) {
 }
 
 async function signInWithGoogle() {
-  const { error } = await supabaseClient.auth.signInWithOAuth({
-    provider: 'google',
-    options: {
-      scopes: GOOGLE_OAUTH_SCOPES,
-      redirectTo: window.location.href.split('#')[0].split('?')[0],
-      queryParams: { access_type: 'offline', prompt: 'consent' },
-    },
-  });
-  if (error) addLog(nowTime(), `Auth: ${error.message}`, 'var(--red)');
+  // Disabled in local mode
+  addLog(nowTime(), 'Google sign-in disabled in local mode', 'var(--amber)');
+  return;
 }
 
 async function initSupabaseAuth() {
-  const { data, error } = await supabaseClient.auth.getSession();
-  if (error) {
-    addLog(nowTime(), `Auth: ${error.message}`, 'var(--red)');
-    return;
-  }
-  currentSession = data.session;
+  // Auth disabled - working in local mode without authentication
+  currentSession = { user: { email: 'local@user' }, access_token: 'local-mode' };
   updateAuthUI();
-  if (data.session) await syncSupabaseSession(data.session);
-  else showAuthGate();
-  supabaseClient.auth.onAuthStateChange(async (_event, session) => {
-    currentSession = session;
-    updateAuthUI();
-    if (session) {
-      hideAuthGate();
-      await syncSupabaseSession(session);
-      await loadMeetings();
-    } else {
-      showAuthGate();
-    }
-  });
+  setConnectionStatus('Local Mode');
+  addLog(nowTime(), 'Auth: Running in local mode (no authentication)', 'var(--green)');
+  await loadMeetings();
 }
 
 async function syncSupabaseSession(session) {
-  try {
-    const res = await fetch(`${AUTH_URL}/supabase/session`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        accessToken: session.access_token,
-        providerToken: session.provider_token,
-        providerRefreshToken: session.provider_refresh_token,
-        providerExpiresAt: session.expires_at,
-      }),
-    });
-    const result = await res.json();
-    if (!res.ok) throw new Error(result.error || 'Session sync failed');
-    setConnectionStatus(result.googleConnected ? 'Google Connected' : 'Signed In');
-    document.getElementById('user-email').textContent = result.user.email;
-    if (result.user?.name || result.user?.email) document.querySelector('.avatar').textContent = initialsFor(result.user.name || result.user.email);
-    addLog(nowTime(), `Auth: signed in as ${result.user.email}`, 'var(--green)');
-  } catch (err) {
-    addLog(nowTime(), `Auth: ${err.message}`, 'var(--red)');
-  }
+  // Disabled in local mode - no session sync needed
+  return;
 }
 
 function setAuthMode(mode) {
-  authMode = mode;
-  document.getElementById('login-tab').classList.toggle('active', mode === 'login');
-  document.getElementById('signup-tab').classList.toggle('active', mode === 'signup');
-  document.getElementById('auth-submit').textContent = mode === 'login' ? 'Log In' : 'Create Account';
-  document.getElementById('auth-password').setAttribute('autocomplete', mode === 'login' ? 'current-password' : 'new-password');
-  setAuthMessage('');
+  // Disabled in local mode
+  return;
 }
 
 async function submitEmailAuth() {
-  const email = document.getElementById('auth-email').value.trim();
-  const password = document.getElementById('auth-password').value;
-  if (!email || !password) {
-    setAuthMessage('Enter an email and password.');
-    return;
-  }
-  setAuthMessage(authMode === 'login' ? 'Signing in...' : 'Creating account...');
-  const result = authMode === 'login'
-    ? await supabaseClient.auth.signInWithPassword({ email, password })
-    : await supabaseClient.auth.signUp({ email, password, options: { emailRedirectTo: window.location.href.split('#')[0].split('?')[0] } });
-
-  if (result.error) {
-    setAuthMessage(result.error.message, true);
-    return;
-  }
-  if (authMode === 'signup' && !result.data.session) {
-    setAuthMessage('Account created. Check your email to confirm your address.');
-    return;
-  }
-  setAuthMessage('Signed in.');
+  // Disabled in local mode
+  return;
 }
 
 async function signOut() {
-  await supabaseClient.auth.signOut();
-  currentSession = null;
-  meetingsCache = [];
-  activeMeetingId = null;
-  document.getElementById('user-menu').classList.remove('show');
-  renderMeetings([]);
-  renderMetrics([]);
-  renderEmptyPipeline();
-  showAuthGate();
+  // Disabled in local mode
+  return;
 }
 
 function showAuthGate(message = '') {
-  document.getElementById('auth-overlay').classList.add('show');
-  if (message) setAuthMessage(message);
-  setConnectionStatus('Sign In Required');
+  // Disabled in local mode - never show auth gate
+  return;
 }
 
 function hideAuthGate() {
-  document.getElementById('auth-overlay').classList.remove('show');
+  // Disabled in local mode
+  return;
 }
 
 function setAuthMessage(message, isError = false) {
-  const el = document.getElementById('auth-message');
-  el.textContent = message;
-  el.style.color = isError ? 'var(--red)' : 'var(--text2)';
+  // Disabled in local mode
+  return;
 }
 
 function updateAuthUI() {
-  if (!currentSession) {
-    document.querySelector('.avatar').textContent = '--';
-    document.getElementById('user-email').textContent = 'Not signed in';
-    return;
-  }
-  const email = currentSession.user?.email || 'Signed in';
-  document.querySelector('.avatar').textContent = initialsFor(email);
-  document.getElementById('user-email').textContent = email;
+  // Local mode - show generic user
+  document.querySelector('.avatar').textContent = 'LU';
+  document.getElementById('user-email').textContent = 'Local User (No Auth)';
 }
 
 function toggleUserMenu() {
@@ -1493,7 +1358,8 @@ function toggleUserMenu() {
 }
 
 function authHeaders() {
-  return currentSession?.access_token ? { Authorization: `Bearer ${currentSession.access_token}` } : {};
+  // No auth headers in local mode
+  return {};
 }
 
 function addLog(t, msg, c) {
